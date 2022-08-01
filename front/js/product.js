@@ -7,108 +7,167 @@ console.log(idItem);
 //------------------------------------------------------------------------
 // Récupération des produits de l'api
 //------------------------------------------------------------------------
-function getItem() {
-    // J'introduis l'id du produit directement dans la requète
+//On a crée deux const afin de pouvoir incérer les données au bonne endroit
+const divKanap = document.querySelector(".item__img");
+const selectColor = document.getElementById("colors");
 
-    fetch("http://localhost:3000/api/products/" + idItem)
-        .then(function (response) {
-            return response.json();
-        })
+fetch("http://localhost:3000/api/products/")
+    .then(function (response) {
+        return response.json();
+    })
 
-        // J'exporte les données et affiche les caractéristiques du produit grace à la fonction "showItem"
+    .then(function (data) {
+        const arrayData = data;
 
-        .then(function (data) {
-            showItem(data);
-            getProductForCart(data);
-        })
-        .catch(function (err) {
-            document.querySelector("#items").innerHTML = "<h1>Erreur 404</h1>";
-            console.log("Erreur 404, sur l'api" + err);
-        });
-}
+        //------------------------------------------------------------------------
+        // fonction d'affichage produit
+        //------------------------------------------------------------------------
+        //Création d'une boucle qui va venir implémenter les bonnes données des bons produits sur la bonne page
+        for (element of arrayData) {
+            //Si l'id est le même alors on se trouve sur la bonne page produit
+            if (element._id === idItem) {
+                const imgKanap = document.createElement("img");
+                imgKanap.src = element.imageUrl;
+                imgKanap.alt = element.altTxt;
+                divKanap.appendChild(imgKanap);
 
-//------------------------------------------------------------------------
-// fonction d'affichage produit
-//------------------------------------------------------------------------
-function showItem(article) {
-    // Affichage de l'image
-    let imgItem = document.createElement("img");
-    document.querySelector(".item__img").appendChild(imgItem);
-    imgItem.src = article.imageUrl;
-    imgItem.alt = article.altTxt;
+                document.getElementById("title").textContent = element.name;
+                document.getElementById("price").textContent = element.price;
+                document.getElementById("description").textContent =
+                    element.description;
 
-    // Affichage du nom du produit
-    document.querySelector("#title").innerHTML = article.name;
+                //On va créer une boucle for of pour choisir la bonne couleur proposée
 
-    // Affichage du prix
-    document.querySelector("#price").innerHTML = article.price;
+                for (colors of element.colors) {
+                    const optionColor = document.createElement("option");
 
-    // Affichage de la description
-    document.querySelector("#description").innerHTML = article.description;
+                    //Paramétrage de optionColor
+                    optionColor.value = colors;
+                    optionColor.textContent = colors;
+                    //Insertion dans la page des couleurs du produit
+                    selectColor.appendChild(optionColor);
+                }
+            }
+        }
+    })
+    .catch(function (err) {
+        console.error(err);
+    });
 
-    // Affichage des couleurs disponibles
-    for (let color of article.colors) {
-        let colorOfItem = document.createElement("option");
-        document.querySelector("#colors").appendChild(colorOfItem),
-            (colorOfItem.value = color);
-        colorOfItem.innerHTML = color;
-    }
-}
+//Nous allons regarder ce qu'il y a dans le storage
+const myCart = JSON.parse(localStorage.getItem("cart"));
 
-getItem();
+//Initialisation du paramétrage de ce qu'il sera envoyé dans le storage
+let insertIntoCart = [
+    {
+        idKanap: " ",
+        quantityKanap: 0,
+        colorKanap: " ",
+    },
+];
 
 //------------------------------------------------------------------------
 // Fonction pour envoyer les infos du canapé au clic sur le bouton
 //------------------------------------------------------------------------
-function getProductForCart(product) {
-    const addProduct = document.querySelector("#addToCart");
-    const choiceColor = document.querySelector("#colors");
-    const quantityProduct = document.querySelector("#quantity");
+document.getElementById("addToCart").addEventListener("click", function () {
+    //Récupération des valeurs qu'il faut stocker
 
-    addProduct.addEventListener("click", function () {
-        const myProduct = {
-            name: product.name,
-            id: product._id,
-            picture: product.imageUrl,
-            pictureTxt: product.altTxt,
-            price: product.price,
-            color: choiceColor.value,
-            quantity: parseInt(quantityProduct.value, 10),
-        };
+    //Utilisation de l'objet number pour que le type de valeur soit number
+    let quantitySelect = Number(document.getElementById("quantity").value);
+    let colorSelect = document.getElementById("colors").value;
+    let kanapSelect = idItem;
 
-        // Permet de contrôler qu'une quantité et une couleur sont bien sélectionnées
-        if (quantityProduct.value !== 0 && choiceColor.value !== "") {
-            let cartSaved = JSON.parse(localStorage.getItem("cart"));
-            if (cartSaved) {
-                // Permet de controler l'existence du produit dans le panier (même ID et même couleur)
-                const productControl = cartSaved.find(
-                    (kanap) =>
-                        kanap.id == product._id &&
-                        kanap.color == choiceColor.value
+    //On va aller chercher dans le Storage pour voir si le produit est déjà présent dans le panier
+    //On vérifie qu'il y a bien un quantité sup à 0 et une couleur de sélectionné
+    if (quantitySelect > 0 && quantitySelect < 101 && colorSelect) {
+        if (myCart) {
+            //On vérifie si le panier est vide
+            if (myCart.length === 0) {
+                console.log(
+                    "La panier est vide donc on envoie directement le produit dans le panier"
                 );
-                //Si le produit avec une même ID et même couleur existe alors on augmente la quantité totale
-                if (productControl) {
-                    let finalQuantity =
-                        myProduct.quantity + productControl.quantity;
-                    productControl.quantity = finalQuantity;
-                    saveCart(cartSaved);
-                    //Sinon on push
-                } else {
-                    cartSaved.push(myProduct);
-                    saveCart(cartSaved);
-                }
-                //Si aucun produit est connu alors on injecte le premier dans le panier qui est vierge
-            } else {
-                cartSaved = [];
-                cartSaved.push(myProduct);
-                saveCart(cartSaved);
-            }
-            console.log("L'envoi au panier a bien été effectué");
-        }
-    });
-}
 
-// Sauvegarde le panier dans le localStorage
-function saveCart(cart) {
-    localStorage.setItem("cart", JSON.stringify(cart));
-}
+                //On envoie alors le produit sélectionné
+                insertIntoCart = [
+                    {
+                        idKanap: kanapSelect,
+                        quantityKanap: quantitySelect,
+                        colorKanap: colorSelect,
+                    },
+                ];
+
+                // On met à jour le localStorage
+
+                localStorage.setItem("cart", JSON.stringify(insertIntoCart));
+            } else {
+                // IL y a quelque chose dans le panier
+                console.log(
+                    "Il y a quelque chose dans le panier, on analyse si le produit est déjà existant"
+                );
+
+                // S'il y a un kanap avec même id et couleur on ajoute seulement
+                let addQtyArticle = false;
+
+                for (let i = 0; i < myCart.length; i++) {
+                    //Initialisation de l'inspection id et couleur dans le storage
+                    let existingId = myCart[i].idKanap;
+                    let existingColor = myCart[i].colorKanap;
+
+                    //Conditions pour rechercher
+                    if (
+                        existingId === kanapSelect &&
+                        existingColor === colorSelect
+                    ) {
+                        //On ajoute seulement la nouvelle quantité à celle déjà existante dans le storage
+                        myCart[i].quantityKanap =
+                            Number(myCart[i].quantityKanap) + quantitySelect;
+                        addQtyArticle = true;
+                        console.log(
+                            "Le produit est existant, on adapte la quantité"
+                        );
+                        //On met à jour le panier
+                        localStorage.setItem("cart", JSON.stringify(myCart));
+                    } else {
+                        console.log(
+                            "Le produit n'existe pas dans le panier, on l'insère"
+                        );
+                    }
+                }
+                if (addQtyArticle === false) {
+                    myCart.push({
+                        idKanap: kanapSelect,
+                        quantityKanap: quantitySelect,
+                        colorKanap: colorSelect,
+                    });
+                    localStorage.setItem("cart", JSON.stringify(myCart));
+                }
+            }
+        } else {
+            //Création du storage car il n'existe pas
+            console.log(
+                "Le storage n'existe pas alors on pousse le produit directement"
+            );
+            insertIntoCart = [
+                {
+                    idKanap: kanapSelect,
+                    quantityKanap: quantitySelect,
+                    colorKanap: colorSelect,
+                },
+            ];
+            localStorage.setItem("cart", JSON.stringify(insertIntoCart));
+        }
+        alert("Le produit a été ajouté au panier");
+        //Message d'erreur car il n'y a soit pas de couleur de sélectionné soit pas de quantité
+    } else {
+        console.log(
+            "Pas de couleur ou de quantité indiqué, on affiche le message d'erreur"
+        );
+
+        // message d'erreur à retravailler car il s'affiche plusieurs fois
+        const errorMessage = document.createElement("p");
+        errorMessage.textContent =
+            "Veuillez sélectionner une couleur et une quantité valide.";
+        document.querySelector(".item__content").appendChild(errorMessage);
+    }
+});
+console.log(myCart);
