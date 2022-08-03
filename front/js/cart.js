@@ -1,7 +1,7 @@
 //Récupéraiton du storage
 let myCart = JSON.parse(localStorage.getItem("cart"));
 console.log(myCart);
-
+console.log("La taille de length est de " + myCart.length);
 /* Création d'une fonction qui va permettre de cumuler les multiplications 
 de la quantité * prix pour chaque Kanap présent dans le panier */
 let totalPrice = [];
@@ -11,6 +11,7 @@ function totalCartPrice() {
     );
     return total;
 }
+
 //Pour chaque produit présent dans le local storage on l'affiche dans le panier
 if (myCart) {
     for (let kanap of myCart) {
@@ -143,13 +144,20 @@ if (myCart) {
                     let qtyModifValue = Number(productQuantity.value);
                     let idModif = item.idKanap;
                     let colorModif = item.colorKanap;
-
                     let cart =
                         myCart.find((el) => el.idKanap === idModif) &&
                         myCart.find((el) => el.colorKanap === colorModif);
                     if (cart) {
-                        cart.quantityKanap = qtyModifValue;
-                        localStorage.setItem("cart", JSON.stringify(myCart));
+                        //Si la valeur modifié est supérieur à 1 alors on l'ajoute
+                        if (qtyModifValue >= 1) {
+                            cart.quantityKanap = qtyModifValue;
+                            localStorage.setItem(
+                                "cart",
+                                JSON.stringify(myCart)
+                            );
+                            //Si on ajoute une valeur égale à 0 ou négative alors cela ne va rien àjouter
+                        } else {
+                        }
                     } else {
                         cart.push(Kanap);
                         localStorage.setItem("cart", JSON.stringify(myCart));
@@ -158,6 +166,7 @@ if (myCart) {
                     // refresh
                     location.reload();
                 });
+
                 //Création de la quantité totale
                 function totalProductInCart() {
                     let totalQuantity = 0;
@@ -212,8 +221,9 @@ function validInput(input, regex, alertMessageFalse) {
     let p = input.nextElementSibling;
     //Si la saisie répond bien aux attentes alors on affiche "Champ valide"
     if (testInput) {
-        p.textContent = "Champ valide.";
+        p.textContent = "";
         return true;
+
         //Sinon on affiche l'un des messages que l'on a initialisé plus haut
     } else {
         p.textContent = alertMessageFalse;
@@ -298,14 +308,26 @@ let submitForm = btn_order.addEventListener("click", function (e) {
     /* Si tous les champs sur fomulaire sont OK et que le panier n'est pas vide 
     alors on renseigne notre variable contact et on appel la fonction sendForm 
     pour envoyer le formulaire */
-    if (
-        validInput(firstName, regexText) &&
-        validInput(lastName, regexText) &&
-        validInput(address, regexAdress) &&
-        validInput(city, regexText) &&
-        validInput(email, regexMail) &&
-        myCart.length > 0
-    ) {
+    let errors = 0;
+    if (!validInput(firstName, regexText, messageTextError)) {
+        errors++;
+    }
+    if (!validInput(lastName, regexText, messageTextError)) {
+        errors++;
+    }
+    if (!validInput(address, regexAdress, messageAdresseError)) {
+        errors++;
+    }
+    if (!validInput(city, regexText, messageTextError)) {
+        errors++;
+    }
+    if (!validInput(email, regexMail, messageEmailError)) {
+        errors++;
+    }
+    console.log("Il y a " + errors + " erreur(s).");
+
+    if (errors === 0 && myCart.length > 0) {
+        // Envoi de commande
         contact = {
             firstName: firstName.value,
             lastName: lastName.value,
@@ -314,20 +336,9 @@ let submitForm = btn_order.addEventListener("click", function (e) {
             email: email.value,
         };
         sendForm();
-
         /* Sinon, on regarde ce qui ne va pas : dans une premier on check si le panier est vide.  
     Si c'est la cas alors on retourne l'alerte panier vide */
-    } else if (myCart.length < 1) {
+    } else if (myCart.length === 0) {
         alert("Votre panier est vide");
-        /* Si le panier n'est pas vide on va alors vérifier si se sont les champs du 
-        formulaire qui posent problème. */
-    } else if (
-        !validInput(firstName, regexText) ||
-        !validInput(lastName, regexText) ||
-        !validInput(address, regexAdress) ||
-        !validInput(city, regexText) ||
-        !validInput(email, regexMail)
-    ) {
-        alert("L'un des champs du formulaire n'est pas valide.");
     }
 });

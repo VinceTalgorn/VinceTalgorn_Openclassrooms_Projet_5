@@ -10,6 +10,7 @@ console.log(idItem);
 //On a crée deux const afin de pouvoir incérer les données au bonne endroit
 const divKanap = document.querySelector(".item__img");
 const selectColor = document.getElementById("colors");
+const errorMessage = document.createElement("p");
 
 fetch("http://localhost:3000/api/products/")
     .then(function (response) {
@@ -80,73 +81,51 @@ document.getElementById("addToCart").addEventListener("click", function () {
     //On va aller chercher dans le Storage pour voir si le produit est déjà présent dans le panier
     //On vérifie qu'il y a bien un quantité sup à 0 et une couleur de sélectionné
     if (quantitySelect > 0 && quantitySelect < 101 && colorSelect) {
-        if (myCart) {
-            //On vérifie si le panier est vide
-            if (myCart.length === 0) {
-                console.log(
-                    "La panier est vide donc on envoie directement le produit dans le panier"
-                );
+        //On vérifie si le panier est vide
+        if (myCart.length !== 0) {
+            // Il y a quelque chose dans le panier
+            console.log(
+                "Il y a quelque chose dans le panier, on analyse si le produit est déjà existant"
+            );
 
-                //On envoie alors le produit sélectionné
-                insertIntoCart = [
-                    {
-                        idKanap: kanapSelect,
-                        quantityKanap: quantitySelect,
-                        colorKanap: colorSelect,
-                    },
-                ];
+            // S'il y a un kanap avec même id et couleur on ajoute seulement
+            let addQtyArticle = false;
 
-                // On met à jour le localStorage
+            for (let i = 0; i < myCart.length; i++) {
+                //Initialisation de l'inspection id et couleur dans le storage
+                let existingId = myCart[i].idKanap;
+                let existingColor = myCart[i].colorKanap;
 
-                localStorage.setItem("cart", JSON.stringify(insertIntoCart));
-            } else {
-                // IL y a quelque chose dans le panier
-                console.log(
-                    "Il y a quelque chose dans le panier, on analyse si le produit est déjà existant"
-                );
-
-                // S'il y a un kanap avec même id et couleur on ajoute seulement
-                let addQtyArticle = false;
-
-                for (let i = 0; i < myCart.length; i++) {
-                    //Initialisation de l'inspection id et couleur dans le storage
-                    let existingId = myCart[i].idKanap;
-                    let existingColor = myCart[i].colorKanap;
-
-                    //Conditions pour rechercher
-                    if (
-                        existingId === kanapSelect &&
-                        existingColor === colorSelect
-                    ) {
-                        //On ajoute seulement la nouvelle quantité à celle déjà existante dans le storage
-                        myCart[i].quantityKanap =
-                            Number(myCart[i].quantityKanap) + quantitySelect;
-                        addQtyArticle = true;
-                        console.log(
-                            "Le produit est existant, on adapte la quantité"
-                        );
-                        //On met à jour le panier
-                        localStorage.setItem("cart", JSON.stringify(myCart));
-                    } else {
-                        console.log(
-                            "Le produit n'existe pas dans le panier, on l'insère"
-                        );
-                    }
-                }
-                if (addQtyArticle === false) {
-                    myCart.push({
-                        idKanap: kanapSelect,
-                        quantityKanap: quantitySelect,
-                        colorKanap: colorSelect,
-                    });
-                    localStorage.setItem("cart", JSON.stringify(myCart));
+                //Conditions pour rechercher
+                if (
+                    existingId === kanapSelect &&
+                    existingColor === colorSelect
+                ) {
+                    //On ajoute seulement la nouvelle quantité à celle déjà existante dans le storage
+                    myCart[i].quantityKanap =
+                        Number(myCart[i].quantityKanap) + quantitySelect;
+                    addQtyArticle = true;
+                    console.log(
+                        "Le produit est existant, on adapte la quantité"
+                    );
+                    //On met à jour le panier
+                    saveCart(myCart);
+                } else {
                 }
             }
-        } else {
-            //Création du storage car il n'existe pas
-            console.log(
-                "Le storage n'existe pas alors on pousse le produit directement"
-            );
+            if (addQtyArticle === false) {
+                myCart.push({
+                    idKanap: kanapSelect,
+                    quantityKanap: quantitySelect,
+                    colorKanap: colorSelect,
+                });
+                console.log(
+                    "Le produit n'existe pas dans le panier, on l'insère"
+                );
+                saveCart(myCart);
+            }
+        } else if (myCart.length === 0) {
+            //On envoie alors le produit sélectionné
             insertIntoCart = [
                 {
                     idKanap: kanapSelect,
@@ -154,20 +133,27 @@ document.getElementById("addToCart").addEventListener("click", function () {
                     colorKanap: colorSelect,
                 },
             ];
-            localStorage.setItem("cart", JSON.stringify(insertIntoCart));
+            location.reload();
+            console.log(
+                "La panier est vide donc on envoie directement le produit dans le panier"
+            );
+
+            // On met à jour le localStorage
+            saveCart(insertIntoCart);
         }
+
         alert("Le produit a été ajouté au panier");
         //Message d'erreur car il n'y a soit pas de couleur de sélectionné soit pas de quantité
     } else {
         console.log(
             "Pas de couleur ou de quantité indiqué, on affiche le message d'erreur"
         );
-
-        // message d'erreur à retravailler car il s'affiche plusieurs fois
-        const errorMessage = document.createElement("p");
         errorMessage.textContent =
             "Veuillez sélectionner une couleur et une quantité valide.";
         document.querySelector(".item__content").appendChild(errorMessage);
     }
 });
-console.log(myCart);
+
+function saveCart(myCart) {
+    localStorage.setItem("cart", JSON.stringify(myCart));
+}
