@@ -56,7 +56,11 @@ fetch("http://localhost:3000/api/products/")
     });
 
 //Nous allons regarder ce qu'il y a dans le storage
-const myCart = JSON.parse(localStorage.getItem("cart"));
+let myCart = JSON.parse(localStorage.getItem("cart"));
+console.log(myCart);
+if (myCart === null) {
+    myCart = [];
+}
 
 //------------------------------------------------------------------------
 // Fonction pour envoyer les infos du canapé au clic sur le bouton

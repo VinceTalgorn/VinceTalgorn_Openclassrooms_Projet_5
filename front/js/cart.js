@@ -1,7 +1,5 @@
 //Récupéraiton du storage
 let myCart = JSON.parse(localStorage.getItem("cart"));
-console.log(myCart);
-console.log("La taille de length est de " + myCart.length);
 /* Création d'une fonction qui va permettre de cumuler les multiplications 
 de la quantité * prix pour chaque Kanap présent dans le panier */
 let totalPrice = [];
