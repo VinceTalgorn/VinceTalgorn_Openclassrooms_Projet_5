@@ -15,10 +15,6 @@
 
 -   Vous trouverez au format PDF, [un document qui récapitule tous les cas de tests réalisés](./Talgorn_Vincent_2_plan_test_072022.pdf).
 
-## Contact
-
-Vous pouvez me contacter sur le [workplace d'openclassrooms](https://openclassrooms.workplace.com/profile.php?id=100081178936136), sur [twitter](https://twitter.com/TalgornVincent) ou sur mon [adresse mail](mailto:talgorn.v@gmail.com).
-
 ### Back end Prerequisites
 
 Vous aurez besoin d'avoir Node et `npm` installés localement sur votre machine.
@@ -31,3 +27,7 @@ Vous aurez besoin d'avoir Node et `npm` installés localement sur votre machine.
 ### Front end
 
 -   Le frontend présente la partie utilisateur de l'application. Il doit être lancé avec un serveur local (live server avec vscode par exemple), et nécessite que le backend soit lancé lui aussi pour fonctionner correctement.
+
+## Contact
+
+Vous pouvez me contacter sur le [workplace d'openclassrooms](https://openclassrooms.workplace.com/profile.php?id=100081178936136), sur [twitter](https://twitter.com/TalgornVincent) ou sur mon [adresse mail](mailto:talgorn.v@gmail.com).
